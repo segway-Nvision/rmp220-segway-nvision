@@ -1,0 +1,18 @@
+cmd "0-roscore" {
+    exec = "roscore";
+    host = "localhost";
+}
+
+
+cmd "1-rviz" {
+    exec = "rosrun rviz rviz";
+    host = "localhost";
+}
+
+cmd "2-rosbag-record" {
+}
+
+cmd "3-rqt_multiplot " {
+    exec = "rosrun rqt_multiplot rqt_multiplot";
+    host = "localhost";
+}
