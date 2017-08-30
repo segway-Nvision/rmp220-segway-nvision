@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Activating ROS..."
-#source /opt/ros/$ROSDISTRO/setup.bash
+source /opt/ros/kinetic/setup.bash
 echo "...done."
 
 echo "Setup ROS_HOSTNAME."
