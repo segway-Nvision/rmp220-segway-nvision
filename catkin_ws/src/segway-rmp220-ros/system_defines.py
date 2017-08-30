@@ -3,34 +3,34 @@ COPYRIGHT 2013 SEGWAY Inc.
 
 Software License Agreement:
 
-The software supplied herewith by Segway Inc. (the "Company") for its 
-RMP Robotic Platforms is intended and supplied to you, the Company's 
-customer, for use solely and exclusively with Segway products. The 
-software is owned by the Company and/or its supplier, and is protected 
-under applicable copyright laws.  All rights are reserved. Any use in 
-violation of the foregoing restrictions may subject the user to criminal 
-sanctions under applicable laws, as well as to civil liability for the 
-breach of the terms and conditions of this license. The Company may 
-immediately terminate this Agreement upon your use of the software with 
+The software supplied herewith by Segway Inc. (the "Company") for its
+RMP Robotic Platforms is intended and supplied to you, the Company's
+customer, for use solely and exclusively with Segway products. The
+software is owned by the Company and/or its supplier, and is protected
+under applicable copyright laws.  All rights are reserved. Any use in
+violation of the foregoing restrictions may subject the user to criminal
+sanctions under applicable laws, as well as to civil liability for the
+breach of the terms and conditions of this license. The Company may
+immediately terminate this Agreement upon your use of the software with
 any products that are not Segway products.
 
-The software was written using Python programming language.  Your use 
-of the software is therefore subject to the terms and conditions of the 
-OSI- approved open source license viewable at http://www.python.org/.  
-You are solely responsible for ensuring your compliance with the Python 
+The software was written using Python programming language.  Your use
+of the software is therefore subject to the terms and conditions of the
+OSI- approved open source license viewable at http://www.python.org/.
+You are solely responsible for ensuring your compliance with the Python
 open source license.
 
-You shall indemnify, defend and hold the Company harmless from any claims, 
-demands, liabilities or expenses, including reasonable attorneys fees, incurred 
-by the Company as a result of any claim or proceeding against the Company 
-arising out of or based upon: 
+You shall indemnify, defend and hold the Company harmless from any claims,
+demands, liabilities or expenses, including reasonable attorneys fees, incurred
+by the Company as a result of any claim or proceeding against the Company
+arising out of or based upon:
 
-(i) The combination, operation or use of the software by you with any hardware, 
-    products, programs or data not supplied or approved in writing by the Company, 
-    if such claim or proceeding would have been avoided but for such combination, 
+(i) The combination, operation or use of the software by you with any hardware,
+    products, programs or data not supplied or approved in writing by the Company,
+    if such claim or proceeding would have been avoided but for such combination,
     operation or use.
- 
-(ii) The modification of the software by or on behalf of you 
+
+(ii) The modification of the software by or on behalf of you
 
 (iii) Your use of the software.
 
@@ -40,7 +40,7 @@ arising out of or based upon:
  PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. THE COMPANY SHALL NOT,
  IN ANY CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL OR
  CONSEQUENTIAL DAMAGES, FOR ANY REASON WHATSOEVER.
- 
+
  \file   system_defines.py
 
  \brief  This module defines the interface for the RMP
@@ -64,19 +64,20 @@ RMP_RSP_DATA_RDY  = 5
 RMP_GOTO_STANDBY  = 6
 RMP_GOTO_TRACTOR  = 7
 RMP_GOTO_BALANCE = 8
-
+RMP_FORWARD = 9
+RMP_ZERO = 10
 """------------------------------------------------------------------------
 RMP Feedback dictionaries:
-There are three 32-bit user feedback bitmaps that define the content of the 
+There are three 32-bit user feedback bitmaps that define the content of the
 RMP response message. Each bit in a bitmap corresponds to a feedback variable.
-If the bit is set in the configurable parameter the item is included in the 
+If the bit is set in the configurable parameter the item is included in the
 response packet at the index defined by its order in the bitmaps. This means
-that if the first bit of feedback bitmap one is set it will be the variable 
+that if the first bit of feedback bitmap one is set it will be the variable
 at the first index in the reponse if the last bit of feedback bitmap 3 is set
 it will be the variable at the last index (before the CRC) of the response.
 
 Response packets are big endian and each variable consists of 32 bytes. The variable
-representation in human readable form is defined by the masks below.    
+representation in human readable form is defined by the masks below.
 ------------------------------------------------------------------------"""
 
 """
@@ -112,7 +113,7 @@ feedback_1_bitmap_menu_items = dict({
                             0x00100000:"pse_roll_deg",
                             0x00200000:"pse_roll_rate_dps",
                             0x00400000:"pse_yaw_rate_dps",
-                            0x00800000:"pse_data_is_valid",                            
+                            0x00800000:"pse_data_is_valid",
                             0x01000000:"yaw_rate_limit_rps",
                             0x02000000:"vel_limit_mps",
                             0x04000000:"linear_accel_mps2",
@@ -130,7 +131,7 @@ RMP_FORCED_FEEDBACK_2_MASK         = 0x00000000
 RMP_FLOATING_POINT_FEEDBACK_2_MASK = 0x3FFFFFFF
 RMP_HEX_FEEDBACK_2_MASK            = 0xC0000000
 RMP_IP_FEEDBACK_2_MASK             = 0x00000000
-                         
+
 feedback_2_bitmap_menu_items = dict({
                             0x00000001:"left_rear_vel_mps",
                             0x00000002:"right_front_pos_m",
@@ -223,12 +224,12 @@ feedback_4_bitmap_menu_items = dict()
 """------------------------------------------------------------------------
 RMP Command structures
 There are two types of messages the RMP will accept:
-1. Motion command message: This message contains two 32-bit IEEE754 floating 
+1. Motion command message: This message contains two 32-bit IEEE754 floating
 point variables. The first is the normalized velocity command (range: -1.0...1.0).
 The second is the normalized yaw rate command (range: -1.0...1.0).
 
 2. Configuration message: This message will contain two 32-bit variables. The
-first is a 32-bit integer general purpose command which is the ID of the configuration 
+first is a 32-bit integer general purpose command which is the ID of the configuration
 command (see below). The second is the general purpose parameter which may be integer
 or 32-bit IEEE754 floating point value depending on the command
 ------------------------------------------------------------------------"""
@@ -241,7 +242,7 @@ Can ID: 16-bit ID SID.
 Bytes 0-3: 32-bit variable 1 (MS byte at index 0 LS byte at index 3)
 Bytes 4-7: 32-bit variable 2 (MS byte at index 4 LS byte at index 7)
 
-The format to rmp_interface.py is 
+The format to rmp_interface.py is
 [RMP_MOTION_CMD_ID,norm_vel_cmd,norm_yaw_cmd]
 [RMP_OMNI_MOTION_CMD_ID,norm_vel_cmd,norm_yaw_cmd,angle_cmd_deg]
 [RMP_CFG_CMD_ID,gp_cmd,gp_param]
@@ -256,7 +257,7 @@ Defines the start address for the CAN response
 RMP_RESPONSE_START_CAN_ID = 0x502
 
 """
-The packet structure for USB and Ethernet. 
+The packet structure for USB and Ethernet.
 Bytes 0-1: 16-bit ID (see above).
 Bytes 2-5: 32-bit variable 1 (content depends on message type)
 Bytes 6-9: 32-bit variable 2 (content depends on message type)
@@ -349,13 +350,13 @@ maximum deceleration limit in m/s^2.
 """
 RMP_CMD_SET_MAXIMUM_DECELERATION            = (3)
 
-DEFAULT_MAXIMUM_DECELERATION_MPS2 = 3.923 
-MAX_DECELERATION_MPS2             = 7.848 
+DEFAULT_MAXIMUM_DECELERATION_MPS2 = 3.923
+MAX_DECELERATION_MPS2             = 7.848
 MIN_DECELERATION_MPS2             = 0.0
 
 """
 This command updates the maximum decel to zero response deceleration limit.
-The general purpose command is a 32-bit IEEE754 floating point variable 
+The general purpose command is a 32-bit IEEE754 floating point variable
 representing the maximum DTZ response deceleration limit in m/s^2.
 """
 RMP_CMD_SET_MAXIMUM_DTZ_DECEL_RATE          = (4)
@@ -366,7 +367,7 @@ MIN_DTZ_DECEL_RATE_MPS2              = 0.0
 
 """
 This command updates the coastdown acceleration for acceleration based input
-mapping. The general purpose command is a 32-bit IEEE754 floating point variable 
+mapping. The general purpose command is a 32-bit IEEE754 floating point variable
 representing coastdown acceleration in m/s^2.
 """
 RMP_CMD_SET_COASTDOWN_ACCEL                 = (5)
@@ -376,10 +377,10 @@ MAX_COASTDOWN_ACCEL_MPS2     = 1.961
 MIN_COASTDOWN_ACCEL_MPS2     = 0.0
 
 """
-This command updates the maximum commandable yaw rate. 
-The general purpose command is a 32-bit IEEE754 floating point variable 
+This command updates the maximum commandable yaw rate.
+The general purpose command is a 32-bit IEEE754 floating point variable
 representing the yaw rate limit in rad/s.
-""" 
+"""
 RMP_CMD_SET_MAXIMUM_TURN_RATE               = (6)
 
 DEFAULT_MAXIMUM_YAW_RATE_RPS = 3.0
@@ -387,20 +388,20 @@ MAX_YAW_RATE_RPS             = 4.5
 MIN_YAW_RATE_RPS             = 0.0
 
 """
-This command updates the maximum commandable yaw acceleration. 
-The general purpose command is a 32-bit IEEE754 floating point variable 
+This command updates the maximum commandable yaw acceleration.
+The general purpose command is a 32-bit IEEE754 floating point variable
 representing yaw acceleration in rad/s^2.
-""" 
+"""
 RMP_CMD_SET_MAXIMUM_TURN_ACCEL              = (7)
 
-DEFAULT_MAX_YAW_ACCEL_RPS2 = 28.274 
+DEFAULT_MAX_YAW_ACCEL_RPS2 = 28.274
 MAX_YAW_ACCEL_RPS2         = 28.274
 MIN_YAW_ACCEL_RPS2         = 0.0
 
 """
 This command updates the machine tire diameter used in software to calculate
-velocity, position, differential wheel speed (yaw rate) and accelerations. 
-The general purpose command is a 32-bit IEEE754 floating point variable 
+velocity, position, differential wheel speed (yaw rate) and accelerations.
+The general purpose command is a 32-bit IEEE754 floating point variable
 representing tire diameter in meters.
 """
 RMP_CMD_SET_TIRE_DIAMETER                   = (8)
@@ -414,8 +415,8 @@ MIN_TIRE_DIAMETER_M     = 0.1524
 
 """
 This command updates the machine wheel base length used in software to calculate
-velocity, position, differential wheel speed (yaw rate) and accelerations. 
-The general purpose command is a 32-bit IEEE754 floating point variable 
+velocity, position, differential wheel speed (yaw rate) and accelerations.
+The general purpose command is a 32-bit IEEE754 floating point variable
 representing wheel base length in meters
 """
 RMP_CMD_SET_WHEEL_BASE_LENGTH               = (9)
@@ -427,8 +428,8 @@ MIN_WHEEL_BASE_LENGTH_M     = 0.4142
 
 """
 This command updates the machine track width (lateral distance between the tires)
-used in software to calculate differential wheel speeds (yaw rate). 
-The general purpose command is a 32-bit IEEE754 floating point variable 
+used in software to calculate differential wheel speeds (yaw rate).
+The general purpose command is a 32-bit IEEE754 floating point variable
 representing track width in meters.
 """
 RMP_CMD_SET_WHEEL_TRACK_WIDTH               = (10)
@@ -442,8 +443,8 @@ MIN_WHEEL_TRACK_WIDTH_M     = 0.506476
 
 """
 This command updates the machine transmission ratio (gearbox ratio)
-used in software to convert from motor speed to gearbox output speed 
-The general purpose command is a 32-bit IEEE754 floating point variable 
+used in software to convert from motor speed to gearbox output speed
+The general purpose command is a 32-bit IEEE754 floating point variable
 representing transmission ratio (unitless).
 """
 RMP_CMD_SET_TRANSMISSION_RATIO              = (11)
@@ -503,8 +504,8 @@ DEFAULT_CONFIG_BITMAP = ((YAW_ALAT_LIMIT_MAPPING << YAW_INPUT_MAPPING_SHIFT) |
 
 """
 This command updates the machine ethernet IP address.
-The general purpose command is a 32-bit integer variable representing a 
-dotted quad. 
+The general purpose command is a 32-bit integer variable representing a
+dotted quad.
 The conversion is:
 integer = (first octet * 16777216) + (second octet * 65536) + (third octet * 256) + (fourth octet)
 Bounds for this item are valid IP addresses
@@ -524,8 +525,8 @@ DEFAULT_PORT_NUMBER = 8080
 
 """
 This command updates the machine ethernet IP subnet mask.
-The general purpose command is a 32-bit integer variable representing a 
-dotted quad. 
+The general purpose command is a 32-bit integer variable representing a
+dotted quad.
 The conversion is:
 integer = (first octet * 16777216) + (second octet * 65536) + (third octet * 256) + (fourth octet)
 Bounds for this item are valid IP subnet masks
@@ -536,8 +537,8 @@ DEFAULT_SUBNET_MASK = '255.255.255.0'
 
 """
 This command updates the machine ethernet IP gateway.
-The general purpose command is a 32-bit integer variable representing a 
-dotted quad. 
+The general purpose command is a 32-bit integer variable representing a
+dotted quad.
 The conversion is:
 integer = (first octet * 16777216) + (second octet * 65536) + (third octet * 256) + (fourth octet)
 Bounds for this item are valid IP gateway
@@ -584,13 +585,13 @@ VALID_USER_FB_4_BITMAP_MASK = 0x00000000
 
 
 """
-When the RMP_CMD_FORCE_CONFIG_FEEDBACK_BITMAPS command is set this is the 
+When the RMP_CMD_FORCE_CONFIG_FEEDBACK_BITMAPS command is set this is the
 size of the response array. The index of the items matches the parameter number -1
 for the items defined above. +1 is for the CRC
 """
 NUMBER_OF_NVM_CONFIG_PARAMS = 20 #should match last cmd param id above
 FORCED_CONFIG_FEEDBACK_ITEMS  = NUMBER_OF_NVM_CONFIG_PARAMS + 1
- 
+
 
 """------------------------------------------------------------------------
 End Variables Stored in NV F-RAM memory
@@ -605,10 +606,10 @@ and 0 to stop forcing the feedback.
 RMP_CMD_FORCE_CONFIG_FEEDBACK_BITMAPS       = (30)
 
 """
-This command requests audio songs on the machine. The general purpose parameter 
+This command requests audio songs on the machine. The general purpose parameter
 is a 32 bit integer representing the song request ID. Some songs are presistant (ie they must be
 manually cleared by sending the NO_SONG after set). Most are momentary.
-""" 
+"""
 RMP_CMD_SET_AUDIO_COMMAND                   = (31)
 
 MOTOR_AUDIO_PLAY_NO_SONG                  = (0)
@@ -630,7 +631,7 @@ MOTOR_AUDIO_TEST_SWEEP                    = (15)
 MOTOR_AUDIO_SIMULATE_MOTOR_NOISE          = (16)
 
 """
-This command updates the operational mode request on the machine. The general purpose parameter 
+This command updates the operational mode request on the machine. The general purpose parameter
 is a 32 bit integer representing the mode request ID.
 """
 RMP_CMD_SET_OPERATIONAL_MODE                = (32)
@@ -643,9 +644,9 @@ TRACTOR_REQUEST   = 5
 BALANCE_REQUEST   = 6
 
 """
-This command requests the faultlog from the machine. The general purpose parameter 
+This command requests the faultlog from the machine. The general purpose parameter
 is 1 indicating this is a new request, or 0 indicating it is a subsequent request.
-The entire faultlog requires 6 packets, the first request should have the general 
+The entire faultlog requires 6 packets, the first request should have the general
 purpose command set to 1 the next 6 should have the general purpose command set to 0.
 """
 RMP_CMD_SEND_SP_FAULTLOG                    = (33)
@@ -662,7 +663,7 @@ FAULTLOG_PACKET_NUM_OF_WORDS = 53
 """
 This command resets the position data on the machine. The general purpose command
 is a bitmap of which integrators are to be reset.
-""" 
+"""
 RMP_CMD_RESET_INTEGRATORS                  = (34)
 
 RESET_LINEAR_POSITION      = 0x00000001
@@ -673,15 +674,15 @@ RESET_LEFT_REAR_POSITION   = 0x00000010
 RESET_ALL_POSITION_DATA    = 0x0000001F
 
 """
-This command resets all configurable parameters to their default values. 
+This command resets all configurable parameters to their default values.
 The general purpose parameter is ignored for this request.
-""" 
+"""
 RMP_CMD_RESET_PARAMS_TO_DEFAULT            = (35)
 
 
 """------------------------------------------------------------------------
 RMP Fault definitions
-This section is used to define the decoding of fault status words sent 
+This section is used to define the decoding of fault status words sent
 by the RMP. The meaning of specific faults can be found in the interface
 guide.
 ------------------------------------------------------------------------"""
@@ -699,7 +700,7 @@ transient_fault_decode = dict({
 Critical faults: These faults are latching.
 """
 critical_fault_decode = dict({
-    0x00000000: "",                          
+    0x00000000: "",
     0x00000001:"CRITICAL_FAULT_INIT",
     0x00000002:"CRITICAL_FAULT_INIT_UIP_COMM",
     0x00000004:"CRITICAL_FAULT_INIT_PROPULSION",
@@ -736,7 +737,7 @@ comm_fault_decode = dict({
 MCU faults: These faults are latching.
 """
 mcu_fault_decode = dict({
-    0x00000000: "",                     
+    0x00000000: "",
     0x00000001:"MCU_FAULT_MCU_0_IS_DEGRADED",
     0x00000002:"MCU_FAULT_MCU_0_IS_FAILED",
     0x00000004:"MCU_FAULT_MCU_0_REQUESTS_REDUCED_PERFORMANCE",
@@ -768,7 +769,7 @@ CCU_DETECTED_MCU_FAULT_MASK = 0x001F0000
 Sensor faults: These faults are latching.
 """
 sensor_fault_decode = dict({
-    0x00000000: "",                        
+    0x00000000: "",
     0x00000001:"SENSOR_FAULT_2P5V_VREF_RANGE_FAULT",
     0x00000002:"SENSOR_FAULT_7P2V_VBAT_RANGE_FAULT",
     0x00000004:"SENSOR_FAULT_7P2V_VBAT_WARNING",
@@ -779,12 +780,12 @@ sensor_fault_decode = dict({
     0x00000080:"SENSOR_FAULT_DEFAULT",
     0x00000100:"SENSOR_FAULT_5V_MONITOR_RANGE_FAULT",
     0x00000200:"SENSOR_FAULT_12V_MONITOR_RANGE_FAULT"})
- 
+
 """
 BSA faults: These faults are latching.
 """
 bsa_fault_decode = dict({
-    0x00000000: "",                     
+    0x00000000: "",
     0x00000001:"BSA_FAULT_SIDE_A_MISSING_BSA_DATA",
     0x00000002:"BSA_FAULT_SIDE_B_MISSING_BSA_DATA",
     0x00000004:"BSA_FAULT_UNKNOWN_MESSAGE_RECEIVED",
@@ -801,7 +802,7 @@ bsa_fault_decode = dict({
 Architecture faults: These faults are latching.
 """
 arch_fault_decode = dict({
-    0x00000000: "",                      
+    0x00000000: "",
     0x00000001:"ARCHITECT_FAULT_SPI_RECEIVE",
     0x00000002:"ARCHITECT_FAULT_SPI_TRANSMIT",
     0x00000004:"ARCHITECT_FAULT_SPI_RECEIVE_OVERRUN",
@@ -819,7 +820,7 @@ arch_fault_decode = dict({
 Internal faults: These faults are latching.
 """
 internal_fault_decode = dict({
-    0x00000000: "",                          
+    0x00000000: "",
     0x00000001:"INTERNAL_FAULT_HIT_DEFAULT_CONDITION",
     0x00000002:"INTERNAL_FAULT_HIT_SPECIAL_CASE"})
 
@@ -827,7 +828,7 @@ internal_fault_decode = dict({
 MCU specific faults: These faults are detected locally by the MCU
 """
 mcu_specific_fault_decode = dict({
-    0x00000000: "",                              
+    0x00000000: "",
     0x00000001:"MCU_TRANS_BATTERY_TEMP_WARNING",
     0x00000002:"MCU_TRANS_BATTERY_COLD_REGEN",
     0x00000004:"MCU_UNKNOWN",
@@ -907,8 +908,6 @@ FAULTGROUP_COMM         = 2
 FAULTGROUP_SENSORS      = 3
 FAULTGROUP_BSA          = 4
 FAULTGROUP_MCU          = 5
-FAULTGROUP_ARCHITECTURE = 6  
+FAULTGROUP_ARCHITECTURE = 6
 FAULTGROUP_INTERNAL     = 7
 NUM_OF_FAULTGROUPS      = 8
-
-
