@@ -11,7 +11,6 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Imu,JointState
 from rmp_msgs.msg import BoolStamped,AudioCommand,FaultStatus
-import threading
 
 
 """
