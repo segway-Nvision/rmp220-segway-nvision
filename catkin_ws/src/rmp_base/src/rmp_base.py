@@ -44,13 +44,13 @@ class rmp_base(object):
         rospy.loginfo("setting balance mode!")
 
         # Setup publishers
-        self.pub_topic_a = rospy.Publisher("~pose",String, queue_size=1)
+        self.pub_pose = rospy.Publisher("~pose",String, queue_size=1)
         # Setup subscriber
-        self.sub_topic_b = rospy.Subscriber("/rmp220/base/vel_cmd", TwistStamped, self.cbTopic)
+        self.subVelCmd = rospy.Subscriber("/rmp220/base/vel_cmd", TwistStamped, self.cbTopic)
         # Read parameters
         self.pub_timestep = self.setupParameter("~pub_timestep",1.0)
         # Create a timer that calls the cbTimer function every 1.0 second
-        #self.timer = rospy.Timer(rospy.Duration.from_sec(self.pub_timestep),self.cbTimer)
+        #self.timer = rospy.Timer(rospy.Duration.from_sec(self.pub_timestep),self.cbTimer)#publish robot status
 
         rospy.loginfo("[%s] Initialzed." %(self.node_name))
 
@@ -65,7 +65,6 @@ class rmp_base(object):
         rospy.set_param(param_name,value) #Write to parameter server for transparancy
         rospy.loginfo("[%s] %s = %s " %(self.node_name,param_name,value))
         return value
-
     def cbTopic(self,msg):
         #rospy.loginfo("[%s] %s" %(self.node_name,msg.data))
         #skip "if not" session if "self.active == true"
@@ -78,7 +77,6 @@ class rmp_base(object):
         thread = threading.Thread(target=self.set_velocity,args=(msg,))
         thread.setDaemon(True)
         thread.start()
-
     def set_linear_velocity(self,msg):
         rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z))
         EventHandler.handle_event[RMP_FORWARD]()
@@ -108,11 +106,12 @@ class rmp_base(object):
             self.remain_constant_speed(msg)
 
     def cbTimer(self,event):
-        singer = HelloGoodbye()
+        #singer = HelloGoodbye()
         # Simulate hearing something
+        EventHandler.handle_event[RMP_RSP_DATA_RDY]()
         msg = String()
         msg.data = singer.sing("rmp_base")
-        self.pub_topic_a.publish(msg)
+        self.pub_pose.publish(msg)
 
     def on_shutdown(self):
         rospy.loginfo("[%s] Shutting down." %(self.node_name))
