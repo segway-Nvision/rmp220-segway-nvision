@@ -48,8 +48,6 @@ cd ~/rmp220-segway-nvision/
 
 source environment.sh
 
-roslaunch roslaunch rmp_teleop joystick.launch
-
 roslaunch rmp_base rmp_base.launch
 ```
 
