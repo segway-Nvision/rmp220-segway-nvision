@@ -5,7 +5,7 @@ echo "...done."
 
 echo "Setup ROS_HOSTNAME."
 export ROS_HOSTNAME=$HOSTNAME.local
-export SEGWAYRMP220_ROOT=$HOME/r220-nvision
+export SEGWAYRMP220_ROOT=$HOME/rmp220-segway-nvision
 
 echo "Building machines file..."
 #make -C  $SEGWAYRMP220_ROOT

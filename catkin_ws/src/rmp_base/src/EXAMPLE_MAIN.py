@@ -127,7 +127,7 @@ def rmp_thread():
     Perform the actions defined based on the flags passed out
     """
     while (True == EventHandler._continue):
-        EventHandler.handle_event[RMP_TX_RDY]()
+        EventHandler.handle_event[RMP_ROTATE]()
         EventHandler.handle_event[RMP_RSP_DATA_RDY]()
         time.sleep(1.0)
         EventHandler.handle_event[RMP_ZERO]()
