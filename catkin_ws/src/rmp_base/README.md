@@ -1,4 +1,4 @@
-# Package `rmp_base` {#pkg_name}
+# Package `rmp_base` {#rmp_base}
 
 
 
