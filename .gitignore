@@ -5,3 +5,4 @@ catkin_ws/devel/
 *.bag
 *.pyc
 .DS_Store
+.csv
