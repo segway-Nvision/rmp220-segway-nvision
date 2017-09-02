@@ -41,8 +41,6 @@ class rmp_base(object):
         self.node_name = rospy.get_name()
 
         rospy.loginfo("[%s] Initialzing." %(self.node_name))
-        rospy.loginfo("setting balance mode!")
-
         # Setup publishers
         self.pub_pose = rospy.Publisher("~pose",String, queue_size=1)
         # Setup subscriber
@@ -57,9 +55,6 @@ class rmp_base(object):
         #thread lock for control traffic flow for subscriber
         self.thread_lock = threading.Lock()
         self.active = True
-
-
-
     def setupParameter(self,param_name,default_value):
         value = rospy.get_param(param_name,default_value)
         rospy.set_param(param_name,value) #Write to parameter server for transparancy
@@ -69,11 +64,14 @@ class rmp_base(object):
         #rospy.loginfo("[%s] %s" %(self.node_name,msg.data))
         #skip "if not" session if "self.active == true"
         if not self.active:
-                    rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z))
-                    rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.twist.angular.x, msg.twist.angular.y, msg.twist.angular.z))
-                    rospy.loginfo("From Houston!")
+                    #rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z))
+                    #rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.twist.angular.x, msg.twist.angular.y, msg.twist.angular.z))
+                    #rospy.loginfo("From Houston!")
+                    #alive=threading.active_count()
+                    #rospy.loginfo("alive thread num: %d"%alive)
                     return
 
+        #keep return until, ignore thread approach
         thread = threading.Thread(target=self.set_velocity,args=(msg,))
         thread.setDaemon(True)
         thread.start()
@@ -82,29 +80,42 @@ class rmp_base(object):
         EventHandler.handle_event[RMP_FORWARD]()
         #time.sleep(0.5)#give robot 0.5sec to react
         self.thread_lock.release()
+        self.active = True
+
+        #after=threading.active_count()
+        #rospy.loginfo("inside set_linear_velocity call back thread num: %d"%after)
     def set_angular_velocity(self,msg):
         rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.twist.angular.x, msg.twist.angular.y, msg.twist.angular.z))
         EventHandler.handle_event[RMP_ROTATE]()
         #time.sleep(0.5)#give robot 0.5sec to react
         self.thread_lock.release()
+        self.active = True
 
     def remain_constant_speed(self,msg):#RMP_ZERO
         #rospy.loginfo("no new command ")
         EventHandler.handle_event[RMP_ZERO]()
         #time.sleep(0.5)#give robot 0.5sec to react
         self.thread_lock.release()
-
+        self.active = True
 
     def set_velocity(self,msg):
-
+        self.active = False
+        #check for thread time out
+        #time_started = time.time()
         self.thread_lock.acquire()
-        if abs(msg.twist.linear.x)>0.0:
+
+        #check for thread time out
+        #thread_time_out = 2
+        #if time.time() > time_started + thread_time_out:
+        #    self.thread_lock.release()
+        #    return
+
+        if (msg.twist.linear.x)!=0.0:
             self.set_linear_velocity(msg)
-        elif abs(msg.twist.angular.z)>0.0:
+        elif (msg.twist.angular.z)!=0.0:
             self.set_angular_velocity(msg)
         else:
             self.remain_constant_speed(msg)
-
     def cbTimer(self,event):
         #singer = HelloGoodbye()
         # Simulate hearing something
@@ -119,6 +130,8 @@ class rmp_base(object):
 if __name__ == '__main__':
     # Initialize the node with rospy
     rospy.init_node('rmp_base', anonymous=False)
+    #alive=threading.active_count()
+    #rospy.loginfo("alive thread num: %d"%alive) //when init the node alive thread is 4
     #setup communication thread
     rsp_queue = Queue.Queue()
     cmd_queue = Queue.Queue()
@@ -134,7 +147,6 @@ if __name__ == '__main__':
     #go to BALANCE
     EventHandler.GotoBalance()
     rospy.loginfo("finish initialize!")
-
     # Create the NodeName object
     node = rmp_base()
 
@@ -150,3 +162,7 @@ if __name__ == '__main__':
     # Keep it spinning to keep the node alive
     rospy.spin()
     sys.exit()
+
+
+    #Noriginal thread number after node init 4, after setup communication thread 5, after setup rmp_node sub,pub 7
+    #find out the issue for delay

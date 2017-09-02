@@ -141,17 +141,17 @@ class RMPEventHandlers:
         else:
             self.cmd_queue.put(RMP_CMD)
         """
-        for i in range(5):
-            self.cmd_queue.put(RMP_CMD)
+        #for i in range(5):
+        self.cmd_queue.put(RMP_CMD)
     def Send_ForwardCmd(self):
-        for i in range(5):
-            self.cmd_queue.put(RMP_FORWARD_CMD)
+        #for i in range(5):
+        self.cmd_queue.put(RMP_FORWARD_CMD)
     def Send_Zero(self):
-        for i in range(5):
-            self.cmd_queue.put(RMP_ZERO_CMD)
+        #for i in range(5):
+        self.cmd_queue.put(RMP_ZERO_CMD)
     def Send_Rotate(self):
-        for i in range(5):
-            self.cmd_queue.put(RMP_ROTATE_CMD)
+        #for i in range(5):
+        self.cmd_queue.put(RMP_ROTATE_CMD)
 
 
     def Get_Rsp(self):
