@@ -117,9 +117,9 @@ if __name__ == '__main__':
     cmd_queue = Queue.Queue()
     in_flags  = Queue.Queue()
     out_flags = Queue.Queue()
-#    my_thread = threading.Thread(target=RMP, args=(rmp_addr,rsp_queue,cmd_queue,in_flags,out_flags,UPDATE_DELAY_SEC,LOG_DATA))
-#    my_thread.setDaemon(True)
-#    my_thread.start()
+    my_thread = threading.Thread(target=RMP, args=(rmp_addr,rsp_queue,cmd_queue,in_flags,out_flags,UPDATE_DELAY_SEC,LOG_DATA))
+    my_thread.setDaemon(True)
+    my_thread.start()
 
     #svreate event handler and set to BALANCE MODE
     EventHandler = RMPEventHandlers(cmd_queue,rsp_queue,in_flags)
@@ -131,8 +131,8 @@ if __name__ == '__main__':
     # Create the NodeName object
     node = rmp_base()
 
-#    while my_thread.isAlive():
-#        pass
+    while my_thread.isAlive():
+        pass
 
 
 
