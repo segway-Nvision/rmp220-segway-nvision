@@ -80,14 +80,23 @@ class rmp_base(object):
         thread.setDaemon(True)
         thread.start()
 
-
-
     def set_linear_velocity(self,msg):
         rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z))
+        EventHandler.handle_event[RMP_FORWARD]()
+        #time.sleep(0.5)#give robot 0.5sec to react
         self.thread_lock.release()
     def set_angular_velocity(self,msg):
         rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.twist.angular.x, msg.twist.angular.y, msg.twist.angular.z))
+        EventHandler.handle_event[RMP_ROTATE]()
+        #time.sleep(0.5)#give robot 0.5sec to react
         self.thread_lock.release()
+
+    def remain_constant_speed(self,msg):#RMP_ZERO
+        #rospy.loginfo("no new command ")
+        EventHandler.handle_event[RMP_ZERO]()
+        #time.sleep(0.5)#give robot 0.5sec to react
+        self.thread_lock.release()
+
 
     def set_velocity(self,msg):
 
@@ -97,7 +106,7 @@ class rmp_base(object):
         elif abs(msg.twist.angular.z)>0.0:
             self.set_angular_velocity(msg)
         else:
-            self.thread_lock.release()
+            self.remain_constant_speed(msg)
 
     def cbTimer(self,event):
         singer = HelloGoodbye()
