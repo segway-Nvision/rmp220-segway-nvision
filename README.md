@@ -8,7 +8,7 @@ This is the main software repository for the Nvision segway project. It contains
 Notice
 =======
 You should git pull everytime before you push a new commit!
-
+Master now is been protected 
 
 Building
 ========
