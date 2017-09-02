@@ -5,6 +5,11 @@ This is the main software repository for the Nvision segway project. It contains
 - For an introduction to the project, see the site [nvision](http:).
 - For extensive technical documentation, please refer to [ nvision][ habonbon doc].
 
+Notice
+=======
+You should git pull everytime before you push a new commit!
+
+
 Building
 ========
 pass: ubuntu 14.04.5
