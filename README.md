@@ -1,4 +1,4 @@
-# Main software repository for Duckietown
+# Main software repository for Nvision SegwayRMP220
 
 This is the main software repository for the Nvision segway project. It contains all software, as well as hardware projects.
 
