@@ -12,8 +12,8 @@ Master now is been protected
 
 Building
 ========
-pass: ubuntu 14.04.5
-ROS version: indigo 
+pass: ubuntu 14.04.5  16.04
+ROS version: indigo   kinetic
 
 git clone https://github.com/segway-Nvision/rmp220-segway-nvision.git 
 
