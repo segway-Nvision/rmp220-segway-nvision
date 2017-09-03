@@ -5,6 +5,6 @@ if [ $# -gt 0 ]; then
     export ROS_MASTER_URI=http://$1.local:11311/
 else
     echo "No hostname provided. Using $HOSTNAME."
-    export ROS_MASTER_URI=http://$HOSTNAME.local:11311/
+    export ROS_MASTER_URI=http://192.168.0.100:11311/
 fi
 echo "ROS_MASTER_URI set to $ROS_MASTER_URI"
