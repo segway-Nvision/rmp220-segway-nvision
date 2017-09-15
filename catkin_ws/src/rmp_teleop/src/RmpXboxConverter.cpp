@@ -44,8 +44,8 @@
 
 #include <rmp_msgs/AudioCommand.h>
 
-static const uint32_t WIRELESS_AXES_SIZE = 6;
-static const uint32_t WIRELESS_BUTTONS_SIZE = 12;
+static const uint32_t WIRELESS_AXES_SIZE = 6; // 8
+static const uint32_t WIRELESS_BUTTONS_SIZE = 12; // 11
 static const uint32_t WIRELESS_TRANSLATIONAL_VELOCITY_IDX = 4;
 static const uint32_t WIRELESS_ROTATIONAL_VELOCITY_IDX = 3;
 static const uint32_t WIRELESS_DEADMAN_IDX = 5;

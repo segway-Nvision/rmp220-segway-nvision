@@ -11,7 +11,6 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Imu,JointState
 from rmp_msgs.msg import BoolStamped,AudioCommand,FaultStatus
-import multiprocessing
 
 
 """
@@ -45,8 +44,7 @@ class rmp_base(object):
         # Setup publishers
         self.pub_pose = rospy.Publisher("~pose",String, queue_size=1)
         # Setup subscriber
-        stop_sig = threading.Event();
-        self.subVelCmd = rospy.Subscriber("/rmp220/base/vel_cmd", TwistStamped, self.cbTopic, callback_args = stop_sig)
+        self.subVelCmd = rospy.Subscriber("/rmp220/base/vel_cmd", TwistStamped, self.cbTopic)
         # Read parameters
         self.pub_timestep = self.setupParameter("~pub_timestep",1.0)
         # Create a timer that calls the cbTimer function every 1.0 second
@@ -55,64 +53,43 @@ class rmp_base(object):
         rospy.loginfo("[%s] Initialzed." %(self.node_name))
 
         #thread lock for control traffic flow for subscriber
-        #self.thread_lock = threading.Lock()
-        #self.active = True
+        self.thread_lock = threading.Lock()
+        self.active = True
     def setupParameter(self,param_name,default_value):
         value = rospy.get_param(param_name,default_value)
         rospy.set_param(param_name,value) #Write to parameter server for transparancy
         rospy.loginfo("[%s] %s = %s " %(self.node_name,param_name,value))
         return value
-    def cbTopic(self,msg, stop_sig):
+    def cbTopic(self,msg):
         #rospy.loginfo("[%s] %s" %(self.node_name,msg.data))
         #skip "if not" session if "self.active == true"
-        #if not self.active:
+        if not self.active:
                     #rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z))
                     #rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.twist.angular.x, msg.twist.angular.y, msg.twist.angular.z))
                     #rospy.loginfo("From Houston!")
                     #alive=threading.active_count()
                     #rospy.loginfo("alive thread num: %d"%alive)
-        #            return
+                    return
 
         #keep return until, ignore thread approach
-        stop_sig.set()
-        time.sleep(0.5)
-        thread = threading.Thread(target=self.set_velocity,args=(msg, stop_sig))
+        thread = threading.Thread(target=self.set_velocity,args=(msg,))
         thread.setDaemon(True)
         thread.start()
-        thread.join()
-        print("Earlier command finished")
-    def set_linear_velocity(self,msg, stop_sig):
+    def set_linear_velocity(self,msg):
         rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z))
-        #EventHandler.handle_event[RMP_FORWARD](msg.twist.linear.x)
+        EventHandler.handle_event[RMP_FORWARD]()
         #time.sleep(0.5)#give robot 0.5sec to react
-
-        #while not stop_sig.is_set():
-        while not stop_sig.is_set():
-            EventHandler.handle_event[RMP_FORWARD](msg.twist.linear.x)
-
-        print("Change linear velocity")
-        #self.thread_lock.release()
-        #self.active = True
+        self.thread_lock.release()
+        self.active = True
 
         #after=threading.active_count()
         #rospy.loginfo("inside set_linear_velocity call back thread num: %d"%after)
-    def set_angular_velocity(self,msg, stop_sig):
+    def set_angular_velocity(self,msg):
         rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.twist.angular.x, msg.twist.angular.y, msg.twist.angular.z))
-        #EventHandler.handle_event[RMP_ROTATE](msg.twist.angular.z)
+        EventHandler.handle_event[RMP_ROTATE]()
         #time.sleep(0.5)#give robot 0.5sec to react
-
-        #while not stop_sig.is_set():
-        for i in range(10):
-            EventHandler.handle_event[RMP_ROTATE](msg.twist.angular.z)
-
-        #EventHandler.handle_event[RMP_ZERO]()
-        #self.thread_lock.release()
-        #self.active = True
-
-    def set_zero_velocity(self, stop_sig):
-        rospy.loginfo("Clear Components")
-        while not stop_sig.is_set():
-            EventHandler.handle_event[RMP_ZERO]()
+        self.thread_lock.release()
+        self.active = True
 
     def remain_constant_speed(self,msg):#RMP_ZERO
         #rospy.loginfo("no new command ")
@@ -121,25 +98,24 @@ class rmp_base(object):
         self.thread_lock.release()
         self.active = True
 
-    def set_velocity(self,msg, stop_sig):
-        #self.active = False
+    def set_velocity(self,msg):
+        self.active = False
         #check for thread time out
         #time_started = time.time()
-        #self.thread_lock.acquire()
+        self.thread_lock.acquire()
 
         #check for thread time out
         #thread_time_out = 2
         #if time.time() > time_started + thread_time_out:
         #    self.thread_lock.release()
         #    return
-        stop_sig.clear()
-        if (msg.twist.linear.x)!=0.0:
-            self.set_linear_velocity(msg, stop_sig)
-        elif (msg.twist.angular.z)!=0.0:
-            self.set_angular_velocity(msg, stop_sig)
-        else:
-            self.set_zero_velocity(stop_sig)
 
+        if (msg.twist.linear.x)!=0.0:
+            self.set_linear_velocity(msg)
+        elif (msg.twist.angular.z)!=0.0:
+            self.set_angular_velocity(msg)
+        else:
+            self.remain_constant_speed(msg)
     def cbTimer(self,event):
         #singer = HelloGoodbye()
         # Simulate hearing something
@@ -157,10 +133,10 @@ if __name__ == '__main__':
     #alive=threading.active_count()
     #rospy.loginfo("alive thread num: %d"%alive) //when init the node alive thread is 4
     #setup communication thread
-    rsp_queue = multiprocessing.Queue()
-    cmd_queue = multiprocessing.Queue()
-    in_flags  = multiprocessing.Queue()
-    out_flags = multiprocessing.Queue()
+    rsp_queue = Queue.Queue()
+    cmd_queue = Queue.Queue()
+    in_flags  = Queue.Queue()
+    out_flags = Queue.Queue()
     my_thread = threading.Thread(target=RMP, args=(rmp_addr,rsp_queue,cmd_queue,in_flags,out_flags,UPDATE_DELAY_SEC,LOG_DATA))
     my_thread.setDaemon(True)
     my_thread.start()
@@ -168,11 +144,9 @@ if __name__ == '__main__':
     #svreate event handler and set to BALANCE MODE
     EventHandler = RMPEventHandlers(cmd_queue,rsp_queue,in_flags)
 
-    #EventHandler.GotoTractor()
     #go to BALANCE
     EventHandler.GotoBalance()
     rospy.loginfo("finish initialize!")
-
     # Create the NodeName object
     node = rmp_base()
 
