@@ -35,8 +35,6 @@ be changed to match the new values you defined in your config
 """
 rmp_addr = ("192.168.0.40",8080) #this is the default value and matches the config
 
-MAX_LINEAR_VEL = 0.5
-MAX_ANGULAR_VEL = 3.15
 
 class rmp_base(object):
     def __init__(self, vel):
@@ -67,6 +65,20 @@ class rmp_base(object):
         rospy.loginfo("[%s] %s = %s " %(self.node_name,param_name,value))
         return value
     def cbTopic(self, msg, args):
+        #rospy.loginfo("[%s] %s" %(self.node_name,msg.data))
+        #skip "if not" session if "self.active == true"
+        #if not self.active:
+                    #rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z))
+                    #rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.twist.angular.x, msg.twist.angular.y, msg.twist.angular.z))
+                    #rospy.loginfo("From Houston!")
+                    #alive=threading.active_count()
+                    #rospy.loginfo("alive thread num: %d"%alive)
+        #            return
+
+        #keep return until, ignore thread approach
+
+        rospy.loginfo("Cmd received")
+
         lock = args[0]
         vel  = args[1]
 
@@ -86,16 +98,11 @@ class rmp_base(object):
         #    self.thread_lock.release()
         #    return
 
-        lock.acquire()
-        new_linear_vel  = msg.twist.linear.x
-        new_angular_vel = msg.twist.angular.z
-        # Check new velocity is in bound before modification
-        if (abs(new_linear_x) < MAX_LINEAR_VEL):
-            vel.twist.linear.x = new_linear_vel
-        if (abs(new_angular_z) < MAX_ANGULAR_VEL):
-            vel.twist.angular.z = new_angular_vel
-        rospy.loginfo("Velocity Components: [%f, %f]"%(vel.twist.linear.x, vel.twist.angular.z))
-        lock.release()
+        #lock.acquire()
+        rospy.loginfo("velocity Components: [%f, %f]"%(msg.twist.linear.x, msg.twist.angular.z))
+        vel.twist.linear.x = msg.twist.linear.x
+        vel.twist.angular.z = msg.twist.angular.z
+        #lock.release()
 
     def cbTimer(self,event):
         #singer = HelloGoodbye()
@@ -134,13 +141,13 @@ if __name__ == '__main__':
     # Create the NodeName object
     node = rmp_base(vel)
 
-    # Initial velocity
     vel.twist.linear.x = 0.0
     vel.twist.angular.z = 0.0
 
     while my_thread.isAlive():
         EventHandler.Send_MotionCmd(vel.twist.linear.x, vel.twist.angular.z)
-        time.sleep(0.05)
+        #rospy.loginfo("Send velocity(%.2f, %.2f)"% (vel.twist.linear.x, vel.twist.angular.z))
+        time.sleep(0.08)
 
     # Setup proper shutdown behavior
     rospy.on_shutdown(node.on_shutdown)

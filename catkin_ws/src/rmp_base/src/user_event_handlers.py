@@ -157,7 +157,6 @@ class RMPEventHandlers:
         self.cmd_queue.put(RMP_ROTATE_CMD)
 
     def Send_MotionCmd(self, x, z):
-        #for i in range(5):
         RMP_MOTION_CMD = [RMP_MOTION_CMD_ID, x, z]
         self.cmd_queue.put(RMP_MOTION_CMD)
 

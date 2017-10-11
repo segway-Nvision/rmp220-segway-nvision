@@ -35,22 +35,18 @@ be changed to match the new values you defined in your config
 """
 rmp_addr = ("192.168.0.40",8080) #this is the default value and matches the config
 
-MAX_LINEAR_VEL = 0.5
-MAX_ANGULAR_VEL = 3.15
 
 class rmp_base(object):
-    def __init__(self, vel):
+    def __init__(self):
         # Save the name of the node
         self.node_name = rospy.get_name()
 
         rospy.loginfo("[%s] Initialzing." %(self.node_name))
         # Setup publishers
         self.pub_pose = rospy.Publisher("~pose",String, queue_size=1)
-
-        self.lock = threading.Lock()
-
         # Setup subscriber
-        self.subVelCmd = rospy.Subscriber("/rmp220/base/vel_cmd", TwistStamped, self.cbTopic, callback_args = (self.lock, vel))
+        stop_sig = threading.Event();
+        self.subVelCmd = rospy.Subscriber("/rmp220/base/vel_cmd", TwistStamped, self.cbTopic, callback_args = stop_sig)
         # Read parameters
         self.pub_timestep = self.setupParameter("~pub_timestep",1.0)
         # Create a timer that calls the cbTimer function every 1.0 second
@@ -66,15 +62,67 @@ class rmp_base(object):
         rospy.set_param(param_name,value) #Write to parameter server for transparancy
         rospy.loginfo("[%s] %s = %s " %(self.node_name,param_name,value))
         return value
-    def cbTopic(self, msg, args):
-        lock = args[0]
-        vel  = args[1]
+    def cbTopic(self,msg, stop_sig):
+        #rospy.loginfo("[%s] %s" %(self.node_name,msg.data))
+        #skip "if not" session if "self.active == true"
+        #if not self.active:
+                    #rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z))
+                    #rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.twist.angular.x, msg.twist.angular.y, msg.twist.angular.z))
+                    #rospy.loginfo("From Houston!")
+                    #alive=threading.active_count()
+                    #rospy.loginfo("alive thread num: %d"%alive)
+        #            return
 
-        thread = threading.Thread(target=self.set_velocity,args=(msg, lock, vel))
+        #keep return until, ignore thread approach
+        print("Cmd received")
+        stop_sig.set()
+        time.sleep(0.5)
+        thread = threading.Thread(target=self.set_velocity,args=(msg, stop_sig))
         thread.setDaemon(True)
         thread.start()
+        thread.join()
+        print("Earlier command finished")
+    def set_linear_velocity(self,msg, stop_sig):
+        rospy.loginfo("Linear Components: [%f, %f, %f]"%(msg.twist.linear.x, msg.twist.linear.y, msg.twist.linear.z))
+        #EventHandler.handle_event[RMP_FORWARD](msg.twist.linear.x)
+        #time.sleep(0.5)#give robot 0.5sec to react
 
-    def set_velocity(self, msg, lock, vel):
+        #while not stop_sig.is_set():
+        while not stop_sig.is_set():
+            EventHandler.handle_event[RMP_FORWARD](msg.twist.linear.x)
+
+        print("Change linear velocity")
+        #self.thread_lock.release()
+        #self.active = True
+
+        #after=threading.active_count()
+        #rospy.loginfo("inside set_linear_velocity call back thread num: %d"%after)
+    def set_angular_velocity(self,msg, stop_sig):
+        rospy.loginfo("Angular Components: [%f, %f, %f]"%(msg.twist.angular.x, msg.twist.angular.y, msg.twist.angular.z))
+        #EventHandler.handle_event[RMP_ROTATE](msg.twist.angular.z)
+        #time.sleep(0.5)#give robot 0.5sec to react
+
+        #while not stop_sig.is_set():
+        for i in range(10):
+            EventHandler.handle_event[RMP_ROTATE](msg.twist.angular.z)
+
+        #EventHandler.handle_event[RMP_ZERO]()
+        #self.thread_lock.release()
+        #self.active = True
+
+    def set_zero_velocity(self, stop_sig):
+        rospy.loginfo("Clear Components")
+        while not stop_sig.is_set():
+            EventHandler.handle_event[RMP_ZERO]()
+
+    def remain_constant_speed(self,msg):#RMP_ZERO
+        #rospy.loginfo("no new command ")
+        EventHandler.handle_event[RMP_ZERO]()
+        #time.sleep(0.5)#give robot 0.5sec to react
+        self.thread_lock.release()
+        self.active = True
+
+    def set_velocity(self,msg, stop_sig):
         #self.active = False
         #check for thread time out
         #time_started = time.time()
@@ -85,17 +133,13 @@ class rmp_base(object):
         #if time.time() > time_started + thread_time_out:
         #    self.thread_lock.release()
         #    return
-
-        lock.acquire()
-        new_linear_vel  = msg.twist.linear.x
-        new_angular_vel = msg.twist.angular.z
-        # Check new velocity is in bound before modification
-        if (abs(new_linear_x) < MAX_LINEAR_VEL):
-            vel.twist.linear.x = new_linear_vel
-        if (abs(new_angular_z) < MAX_ANGULAR_VEL):
-            vel.twist.angular.z = new_angular_vel
-        rospy.loginfo("Velocity Components: [%f, %f]"%(vel.twist.linear.x, vel.twist.angular.z))
-        lock.release()
+        stop_sig.clear()
+        if (msg.twist.linear.x)!=0.0:
+            self.set_linear_velocity(msg, stop_sig)
+        elif (msg.twist.angular.z)!=0.0:
+            self.set_angular_velocity(msg, stop_sig)
+        else:
+            self.set_zero_velocity(stop_sig)
 
     def cbTimer(self,event):
         #singer = HelloGoodbye()
@@ -118,7 +162,6 @@ if __name__ == '__main__':
     cmd_queue = multiprocessing.Queue()
     in_flags  = multiprocessing.Queue()
     out_flags = multiprocessing.Queue()
-    vel = TwistStamped()
     my_thread = threading.Thread(target=RMP, args=(rmp_addr,rsp_queue,cmd_queue,in_flags,out_flags,UPDATE_DELAY_SEC,LOG_DATA))
     my_thread.setDaemon(True)
     my_thread.start()
@@ -132,15 +175,13 @@ if __name__ == '__main__':
     rospy.loginfo("finish initialize!")
 
     # Create the NodeName object
-    node = rmp_base(vel)
-
-    # Initial velocity
-    vel.twist.linear.x = 0.0
-    vel.twist.angular.z = 0.0
+    node = rmp_base()
 
     while my_thread.isAlive():
-        EventHandler.Send_MotionCmd(vel.twist.linear.x, vel.twist.angular.z)
-        time.sleep(0.05)
+        pass
+
+
+
 
     # Setup proper shutdown behavior
     rospy.on_shutdown(node.on_shutdown)
